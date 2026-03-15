@@ -1,6 +1,6 @@
 [project]
 name = "platspec-operator"
-version = "0.1.0"
+version = "0.1.1"
 description = "Open-source Kubernetes operator implementing the Platform Specification processing layer"
 authors = [
     { name = "Josh West", email = "josh@foundation.io" }
