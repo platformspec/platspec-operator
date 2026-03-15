@@ -1,0 +1,134 @@
+# Platform Specification — Namespace Bootstrap + RBAC (Operator Smoke Test)
+#
+# Exercises the full Platspec Operator pipeline with zero cloud dependencies:
+#
+#   Platform + Environment + BlueprintBinding
+#     → KCL execution in dependency order:
+#         1. namespace-bootstrap  → Namespace + Deployment
+#         2. namespace-rbac       → ServiceAccount + Roles + RoleBindings
+#                                   (reads namespace from namespace-bootstrap capability output)
+#         3. metadata             → ConfigMap
+#       → server-side apply
+#         → async/sync status evaluation
+#
+# Prerequisites: a running Kubernetes cluster (kind, k3s, etc.) and the
+# Platspec Operator installed.  No cloud credentials required.
+---
+apiVersion: core.platformspec.io/v1alpha1
+kind: Platform
+metadata:
+  name: smoke-test
+  namespace: platspec-system
+spec:
+  organization: Platform Team
+  description: Operator smoke test — no cloud dependencies
+  author: Developer
+  version: 0.1.0
+  contactEmail: dev@example.com
+
+  deletionPolicy: Delete
+
+  resourceSelector:
+    matchLabels:
+      platform.platformspec.io/name: smoke-test
+
+  requirements:
+    capabilities:
+      - namespace-bootstrap
+      - namespace-rbac
+    general:
+      cloudProvider: none
+      securityLevel: basic
+      complianceNeeds: []
+    resources:
+      - kind: Environment
+        minimum: 1
+
+---
+apiVersion: core.platformspec.io/v1alpha1
+kind: Environment
+metadata:
+  name: development
+  namespace: platspec-system
+  labels:
+    platform.platformspec.io/name: smoke-test
+    platform.platformspec.io/component: environment
+    environment: development
+spec:
+  description: Development environment for smoke testing
+  providerRefs: []
+  tags:
+    Environment: development
+    Platform: smoke-test
+
+---
+apiVersion: core.platformspec.io/v1alpha1
+kind: BlueprintBinding
+metadata:
+  name: smoke-test-bootstrap
+  namespace: platspec-system
+  labels:
+    platform.platformspec.io/name: smoke-test
+    platform.platformspec.io/component: blueprint-binding
+spec:
+  platformRef:
+    name: smoke-test
+
+  deletionPolicy: Delete
+
+  selectors:
+    environmentSelector:
+      matchLabels:
+        environment: development
+
+  blueprintMappings:
+    - capability: namespace-bootstrap
+      blueprint:
+        name: namespace-bootstrap
+        version: 0.1.0
+        config:
+          replicas: 2
+          image: nginx:latest
+    - capability: namespace-rbac
+      blueprint:
+        name: namespace-rbac
+        version: 0.1.0
+        config:
+          adminSubjects:
+            - kind: Group
+              name: platform-admins
+          viewerSubjects:
+            - kind: Group
+              name: platform-viewers
+    - capability: metadata
+      blueprint:
+        name: configmap-platform-metadata
+        version: 0.1.0
+        config:
+          namespace: smoke-test-development
+# ---
+# apiVersion: core.platformspec.io/v1alpha1
+# kind: BlueprintBinding
+# metadata:
+#   name: smoke-test-broken
+#   namespace: platspec-system
+#   labels:
+#     platform.platformspec.io/name: smoke-test
+#     platform.platformspec.io/component: blueprint-binding
+# spec:
+#   platformRef:
+#     name: smoke-test
+
+#   deletionPolicy: Delete
+
+#   selectors:
+#     environmentSelector:
+#       matchLabels:
+#         environment: development
+
+#   blueprintMappings:
+#     - capability: intentionally-broken
+#       blueprint:
+#         name: broken-kcl-syntax
+#         version: 0.1.0
+#         config: {}

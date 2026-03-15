@@ -1,0 +1,11 @@
+name: status-test
+version: "0.1.0"
+status:
+  fields:
+    - field: replicas
+      expr: childResources["apps/v1/Deployment"][0].spec.replicas
+      description: Number of desired replicas
+    - field: ready
+      expr: |
+        deploy = childResources["apps/v1/Deployment"][0]
+        deploy?.status?.readyReplicas == deploy?.spec?.replicas

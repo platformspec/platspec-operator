@@ -1,0 +1,34 @@
+platform:
+  name: minimal-platform
+  namespace: platspec-system
+  overrides: {}
+
+environment:
+  name: development
+  spec:
+    description: Development environment
+    providerRefs: []
+    tags: {}
+  status: {}
+
+clusters: []
+networks: []
+providers: []
+credentials: []
+
+# Simulates the output written by the namespace-bootstrap capability upstream.
+# The operator populates context.capabilities in dependency order at runtime.
+capabilities:
+  namespace-bootstrap:
+    namespace: minimal-platform-development
+    ready: true
+
+config:
+  adminSubjects:
+    - kind: Group
+      name: platform-admins
+  viewerSubjects:
+    - kind: Group
+      name: platform-viewers
+
+overrides: {}
