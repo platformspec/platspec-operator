@@ -1,1 +1,0 @@
-"""Platspec Operator kopf handlers."""
