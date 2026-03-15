@@ -46,7 +46,7 @@ The operator:
 ### Helm
 
 ```bash
-helm repo add platspec https://charts.platformspec.io
+helm repo add platspec https://platformspec.github.io/platspec-operator
 helm repo update
 
 helm install platspec-operator platspec/platspec-operator \
