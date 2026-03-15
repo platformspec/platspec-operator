@@ -1,0 +1,58 @@
+image:
+  repository: ghcr.io/foundationio/platspec-operator
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false # operator writes kcl cache at runtime
+  capabilities:
+    drop: [ALL]
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+operator:
+  # Kubernetes namespace to watch. Empty string means cluster-wide (all namespaces).
+  namespace: ""
+  logLevel: INFO
+  logFormat: text # text (human-readable) or json (structured)
+  devMode: false
+  dryRun: false
+  reconcileInterval: 300
+  maxWorkers: 4
+  kclTimeout: 30
+  blueprintCacheEnabled: true
+
+# Blueprints are loaded from a directory mounted into the operator pod.
+# Provide blueprints via a PersistentVolumeClaim or a pre-existing volume.
+blueprints:
+  mountPath: /blueprints
+  # PVC to mount as the blueprints directory.
+  # The PVC must be pre-populated with blueprint packages.
+  persistence:
+    enabled: false
+    claimName: ""
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

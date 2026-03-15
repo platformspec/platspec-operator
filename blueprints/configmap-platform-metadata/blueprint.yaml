@@ -1,0 +1,78 @@
+apiVersion: design.platformspec.io/v1alpha1
+kind: Blueprint
+
+metadata:
+  name: configmap-platform-metadata
+  capability: platform-metadata
+  version: 0.1.0
+  description: >
+    Creates a single ConfigMap containing platform identity metadata (name,
+    environment, tier). Smoke-tests the synchronous evaluation path — KCL
+    execution, server-side apply, and immediate status resolution — with no pod
+    scheduling, image pulls, or cloud provider required.
+  author: FoundationIO
+  maintainer: blueprints@foundation.io
+  providers: []
+  minOperatorVersion: 0.1.0
+  tags:
+    - local
+    - development
+    - smoke-test
+
+requires:
+  - namespace-bootstrap
+
+inputs:
+  context:
+    required:
+      - platform
+      - environment
+    optional: []
+
+  config:
+    - field: namespace
+      type: string
+      default: "platspec-example"
+      description: Namespace in which to create the ConfigMap. Must already exist.
+
+    - field: tier
+      type: string
+      default: "development"
+      description: Environment tier label written into the ConfigMap data (e.g. development, staging, production).
+
+outputs:
+  generates:
+    - apiVersion: v1
+      kind: ConfigMap
+
+status:
+  target: Platform
+
+  fields:
+    - field: ready
+      type: bool
+      description: True when the ConfigMap exists and contains the platform key.
+      expr: |
+        cm = childResources["v1/ConfigMap"][0]
+        cm.data.platform != ""
+
+    - field: configMapName
+      type: string
+      description: Name of the provisioned ConfigMap.
+      expr: |
+        cm = childResources["v1/ConfigMap"][0]
+        cm.metadata.name
+
+    - field: namespace
+      type: string
+      description: Namespace the ConfigMap was created in.
+      expr: |
+        cm = childResources["v1/ConfigMap"][0]
+        cm.metadata.namespace
+
+    - field: tier
+      type: string
+      description: Tier value recorded in the ConfigMap.
+      expr: |
+        cm = childResources["v1/ConfigMap"][0]
+        cm.data.tier

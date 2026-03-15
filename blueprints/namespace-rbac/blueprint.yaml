@@ -1,0 +1,99 @@
+apiVersion: design.platformspec.io/v1alpha1
+kind: Blueprint
+
+metadata:
+  name: namespace-rbac
+  capability: namespace-rbac
+  version: 0.1.0
+  description: >
+    Provisions RBAC resources (ServiceAccount, Roles, RoleBindings) in the
+    namespace created by namespace-bootstrap. Reads the target namespace name
+    from context.capabilities["namespace-bootstrap"] so it does not need to
+    be reconfigured. Creates a platform-admin ServiceAccount for automated
+    tooling, an admin Role with full workload access, a viewer Role with
+    read-only access, and bindings for each. Additional subjects (users,
+    groups, external ServiceAccounts) can be added via config.
+  author: FoundationIO
+  maintainer: blueprints@foundation.io
+  providers: []
+  minOperatorVersion: 0.1.0
+  tags:
+    - local
+    - rbac
+    - security
+
+requires:
+  - namespace-bootstrap
+
+inputs:
+  context:
+    required:
+      - platform
+      - environment
+    optional:
+      - capabilities
+
+  config:
+    - field: namespace
+      type: string
+      default: ""
+      description: >
+        Fallback namespace when namespace-bootstrap capability output is not
+        available. Defaults to {platform}-{environment} if empty.
+
+    - field: adminSubjects
+      type: list
+      default: []
+      description: >
+        Additional subjects to bind to the platform-admin Role. Each entry must
+        have kind (User | Group | ServiceAccount), name, and optionally namespace
+        (required for ServiceAccount kind).
+
+    - field: viewerSubjects
+      type: list
+      default: []
+      description: >
+        Subjects to bind to the platform-viewer Role. Same structure as
+        adminSubjects. Viewer RoleBinding is created with an empty subjects list
+        if none are configured.
+
+outputs:
+  generates:
+    - apiVersion: v1
+      kind: ServiceAccount
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+
+status:
+  target: Platform
+
+  fields:
+    - field: ready
+      type: bool
+      description: True when the admin RoleBinding exists and has at least one subject.
+      expr: |
+        rb = childResources["rbac.authorization.k8s.io/v1/RoleBinding"][0]
+        len(rb.subjects) > 0 if rb?.subjects else False
+
+    - field: serviceAccount
+      type: string
+      description: Name of the provisioned platform admin ServiceAccount.
+      expr: |
+        sa = childResources["v1/ServiceAccount"][0]
+        sa.metadata.name
+
+    - field: namespace
+      type: string
+      description: Namespace in which RBAC resources were created.
+      expr: |
+        sa = childResources["v1/ServiceAccount"][0]
+        sa.metadata.namespace
+
+    - field: adminSubjectCount
+      type: int
+      description: Total number of subjects bound to the platform-admin Role.
+      expr: |
+        rb = childResources["rbac.authorization.k8s.io/v1/RoleBinding"][0]
+        len(rb.subjects) if rb?.subjects else 0

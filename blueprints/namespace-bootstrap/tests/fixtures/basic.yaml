@@ -1,0 +1,23 @@
+platform:
+  name: minimal-platform
+  overrides: {}
+
+environment:
+  name: development
+  spec:
+    description: Development environment
+    providerRefs: []
+    tags: {}
+  status: {}
+
+clusters: []
+networks: []
+providers: {}
+credentials: {}
+outputs: {}
+
+config:
+  replicas: 1
+  image: "nginx:latest"
+
+overrides: {}

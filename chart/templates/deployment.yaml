@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "platspec-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platspec-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "platspec-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "platspec-operator.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "platspec-operator.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - platspec-operator
+            - --config-file=/etc/platspec-operator/config.yaml
+            - --log-level={{ .Values.operator.logLevel }}
+            - --log-format={{ .Values.operator.logFormat }}
+            {{- if .Values.operator.namespace }}
+            - --namespace={{ .Values.operator.namespace }}
+            {{- end }}
+            {{- if .Values.operator.devMode }}
+            - --dev
+            {{- end }}
+            {{- if .Values.operator.dryRun }}
+            - --dry-run
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/platspec-operator
+              readOnly: true
+            {{- if .Values.blueprints.persistence.enabled }}
+            - name: blueprints
+              mountPath: {{ .Values.blueprints.mountPath }}
+              readOnly: true
+            {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "platspec-operator.fullname" . }}
+        {{- if .Values.blueprints.persistence.enabled }}
+        - name: blueprints
+          persistentVolumeClaim:
+            claimName: {{ .Values.blueprints.persistence.claimName }}
+            readOnly: true
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
