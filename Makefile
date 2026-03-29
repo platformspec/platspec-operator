@@ -5,7 +5,7 @@
 UV := uv
 PROJECT_NAME := platspec-operator
 NAMESPACE := platspec-system
-IMAGE_REPO := ghcr.io/foundationio/platspec-operator
+IMAGE_REPO := ghcr.io/platformspec/platspec-operator
 IMAGE_TAG  := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 REPO_ROOT  := $(shell git rev-parse --show-toplevel 2>/dev/null || realpath .)
 

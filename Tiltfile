@@ -19,7 +19,7 @@ load('ext://podman', 'podman_build')
 load('ext://secret', 'secret_from_dict')
 
 
-IMAGE     = 'ghcr.io/foundationio/platspec-operator'
+IMAGE     = 'ghcr.io/platformspec/platspec-operator'
 NAMESPACE = 'platspec-system'
 REPO_ROOT = '../..'
 

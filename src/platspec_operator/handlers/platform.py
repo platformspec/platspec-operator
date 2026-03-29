@@ -870,6 +870,34 @@ async def platform_reconcile(
     )
 
 
+@kopf.on.timer(_GROUP, _VERSION, _PLURAL, interval=30, idle=30)
+async def platform_status_timer(
+    spec: Dict[str, Any],
+    meta: Dict[str, Any],
+    status: Dict[str, Any],
+    patch: kopf.Patch,
+    memo: kopf.Memo,
+    **kwargs: Any,
+) -> None:
+    """Periodic re-reconcile to update status from downstream resources.
+
+    Blueprint status expressions evaluate against live Kubernetes resources
+    that were applied by previous reconciliations. Those resources may change
+    status asynchronously (e.g. a provisioning controller marks a resource
+    Ready). This timer ensures the Platform's status reflects the latest
+    state without requiring explicit event triggers from downstream systems.
+    """
+    if meta.get("deletionTimestamp"):
+        return
+    await _reconcile(
+        name=meta["name"],
+        namespace=meta.get("namespace", ""),
+        spec=spec,
+        patch=patch,
+        memo=memo,
+    )
+
+
 @kopf.on.delete(_GROUP, _VERSION, _PLURAL)
 async def platform_delete(
     spec: Dict[str, Any],
