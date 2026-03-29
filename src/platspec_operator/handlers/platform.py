@@ -574,6 +574,7 @@ async def _reconcile_inner(
                     # Pass outputs from already-applied capabilities so downstream
                     # blueprints can read values via context.capabilities["cap-name"].
                     ctx.capabilities = dict(capability_results)
+                    ctx.bound_capabilities = [b.capability for b in resolved]
                     # Resolve actual secret values before passing context to KCL.
                     # Failure here means the blueprint can't run — record and skip.
                     try:
@@ -675,6 +676,7 @@ async def _reconcile_inner(
                     platform_overrides=overrides,
                 )
                 ctx.capabilities = dict(capability_results)
+                ctx.bound_capabilities = [b.capability for b in no_env_resolved]
                 try:
                     ctx = resolve_secrets(ctx, k8s)
                 except SecretNotFoundError as e:

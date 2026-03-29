@@ -40,6 +40,13 @@ class BlueprintContext(BaseModel):
     # Populated by the reconcile loop in dependency order so downstream blueprints
     # can read values produced by upstream ones via context.capabilities["cap-name"].
     capabilities: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    # All capability names that have bindings in this platform, regardless of
+    # execution order. Allows blueprints to make decisions based on what *will*
+    # run (e.g. infrastructure blueprint checks if "cni" is bound to decide
+    # whether to disable the default VPC CNI on EKS clusters).
+    bound_capabilities: List[str] = Field(
+        default_factory=list, alias="boundCapabilities",
+    )
 
 
 class StatusFieldSchema(BaseModel):
