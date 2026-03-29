@@ -2,6 +2,28 @@ apiVersion: v1
 entries:
   platspec-operator:
   - apiVersion: v2
+    appVersion: v0.1.2
+    created: "2026-03-29T02:18:27.43240449Z"
+    description: Open-source Kubernetes operator implementing the Platform Specification
+      processing layer
+    digest: 27b8accc13fefb800615df7cbdd411291d81ad977ca23637942f8ac647d37218
+    keywords:
+    - kubernetes
+    - operator
+    - platform-specification
+    - platformspec
+    - kopf
+    maintainers:
+    - email: josh@foundation.io
+      name: Josh West
+    name: platspec-operator
+    sources:
+    - https://gitlab.com/platformspec/platspec-operator
+    type: application
+    urls:
+    - https://github.com/platformspec/platspec-operator/releases/download/platspec-operator-0.1.2/platspec-operator-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: v0.1.1
     created: "2026-03-15T15:06:42.0549859Z"
     description: Open-source Kubernetes operator implementing the Platform Specification
@@ -23,4 +45,4 @@ entries:
     urls:
     - https://github.com/platformspec/platspec-operator/releases/download/platspec-operator-0.1.1/platspec-operator-0.1.1.tgz
     version: 0.1.1
-generated: "2026-03-15T15:06:42.05501794Z"
+generated: "2026-03-29T02:18:27.432410632Z"
